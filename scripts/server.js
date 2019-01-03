@@ -2,83 +2,89 @@ const axios = require('axios')
 const heroku = "http://localhost:3000";
 
 
-function getAllPosts() {
-  return axios.get(heroku + "/posts")
-}
+// HELPER FUNCTION- standarizes format for axios calls
+function request(path, method = 'get', body = null) {
+  let bearerToken = ''
+  const token = localStorage.getItem('token')
 
-function getAllComments(id) {
-  return axios.get(heroku + "/posts/" + id + "/comments")
-}
+  if (token) {
+    bearerToken = `Bearer ${token}`
+  }
 
-function createPost(newPost) {
-  const token = localStorage.getItem("token")
-  return axios.post(heroku + "/posts", newPost, {
+  return axios(`${heroku}${path}`, {
+    method: method,
     headers: {
-      Authorization: "bearer " + token
-    }
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': bearerToken
+    },
+    data: body
   })
 }
 
-function createComment(id, newComment) {
-  return axios.post(heroku + "/posts/" + id + "/comments", newComment)
+// CRUD OPERATIONS
+
+const createPost = newPost => {
+  const route = `/posts${newPost}`
+  return request(route, 'post')
 }
 
-function updatePost(id, newPost) {
-  console.log(newPost);
-  
-  const token = localStorage.getItem("token")
-  return axios.put(heroku + "/posts/" + id, newPost, {
-    headers: {
-      Authorization: "bearer " + token
-    }
-  })
+const createComment = (id, newComment) => {
+  const route = `/posts/${id}/comments`
+  return request(route, 'post', newComment)
 }
 
-function updateComment(id, newComment) {
-  return axios.put(heroku + "/posts/" + id + "/comments", newComment)
+// the two rating routes are different, should they be? 
+// we have ratings(plural) and rating(singular)
+const createRating = id => {
+  const route = `/posts/${id}/ratings`
+  return request(route, 'post')
 }
 
-function delPost(id) {
-  const token = localStorage.getItem("token")
-  return axios.delete(
-    heroku + "/posts/" + id, {
-      headers: {
-        Authorization: "bearer " + token
-      }
-    })
+const getAllPosts = () => {
+  const route = '/posts'
+  return request(route, 'get')
 }
 
-function delComment(id, cId) {
-  return axios.delete(heroku + "/posts/" + id + "/comments", cId)
+const getAllComments = id => {
+  const route = `/posts/${id}/comments`
+  return request(route, 'get')
 }
 
-function createRating(entry, id) {
-  const token = localStorage.getItem("token");
-  return axios.post(
-    heroku + "/posts/" + id + "/ratings",
-    entry, {
-      headers: {
-        Authorization: "bearer " + token
-      }
-    });
+const getRating = id => {
+  const route = `/posts/${id}/rating`
+  return request(route, 'get')
 }
 
-function getRating(id) {
-  return axios.get(heroku + "/posts/" + id + "/rating")
+const updatePost = (id, newPost) => {
+  const route = `/posts/${id}`
+  return request(route, 'put', newPost)
 }
 
-function votes() {
+const updateComment = (id, newComment) => {
+  const route = `/posts/${id}/comments`
+  return request(route, 'put', newComment)
+}
 
+const delPost = id => {
+  const route = `/posts/${id}`
+  return request(route, 'delete')
+}
+
+const delComment = (id, commentId) => {
+  const route = `/posts/${id}/comments`
+  return request(route, 'delete', commentId)
 }
 
 module.exports = {
-  getAllPosts,
-  getAllComments,
   createPost,
   createComment,
+  createRating,
+  getAllPosts,
+  getAllComments,
+  getRating,
   updatePost,
   updateComment,
   delPost,
-  createRating,
   delComment
 }
