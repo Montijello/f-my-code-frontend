@@ -1635,7 +1635,6 @@ const server = require("./server");
 const edit = require("./edit")
 
 
-
 function getCommentsHandler(buildPosts) {
   return function(e) {
     const button = e.target
@@ -1652,7 +1651,6 @@ function getCommentsHandler(buildPosts) {
       })
   }
 }
-
 
 function editBtnHandler(cb){
   return function (e) {
@@ -1694,7 +1692,8 @@ function voteUp(buildPosts) {
     const button = e.target;
     const postId = button.getAttribute("data-post-id");
 
-    server.createRating({ rating: 1 }, postId)
+    // server.createRating({ rating: 1 }, postId)
+    server.createRating(postId) 
       .then(() => {
         removePostsDOM();
         buildPosts();
@@ -1740,7 +1739,7 @@ function buildComments(comments) {
       action: "click",
       callback: listeners.shrinkComments
     }]
-  });
+  })
 
   comments.forEach(comment => {
 
@@ -1767,13 +1766,11 @@ function buildComments(comments) {
 module.exports = buildComments;
 
 },{"./btnEvents":28,"./utils":35}],30:[function(require,module,exports){
-const axios = require("axios");
 const buildElement = require("./utils");
 const server = require("./server");
 const listeners = require("./btnEvents");
 
 const postsDiv = document.querySelector("#showPosts");
-const user_id = localStorage.getItem("user_id");
 
 const loggedIn = !!localStorage.getItem("token");
 
@@ -1797,7 +1794,7 @@ function buildPosts() {
     })
 }
 
-function buildPanel({ id, user_id, description, code, title, username, rating }, getDeleteHandler, getCommentsHandler, voteUp, voteDown, editBtnHandler) {
+function buildPanel({ id, description, code, title, username, rating }, getDeleteHandler, getCommentsHandler, voteUp, voteDown, editBtnHandler) {
 
 
   const titleHTML = buildElement("h3", { innerText: title, class: ["title-data"] });
@@ -1805,32 +1802,35 @@ function buildPanel({ id, user_id, description, code, title, username, rating },
   const codeHTML = buildElement("code", { innerText: code, class: ["code-data"] });
   const userHTML = buildElement("span", {
     innerText: username,
-    class: [ "user" ]
+    class: ["user"]
   });
 
   const ratingHTML = buildElement("span", {
     innerText: rating,
-    class: [ "rating" ]
+    class: ["rating"]
   });
 
   const delButHTML = buildElement("a", {
     id: "remove-post",
     innerText: "❌",
-    attributes: {"data-post-id": id },
+    cursor: "pointer",
+    attributes: { "data-post-id": id },
     listeners: [
       { action: "click", callback: getDeleteHandler }]
   });
+
   const editButHTML = buildElement("a", {
     id: "remove-post",
-    innerText: " ✏️",
-    attributes: {"data-post-id": id },
+    innerText: "✅",
+    cursor: "pointer",
+    attributes: { "data-post-id": id },
     listeners: [
       { action: "click", callback: editBtnHandler }]
   });
 
   const commButHTML = buildElement("a", {
     id: "read-comments",
-    class: [ "more-or-less" ],
+    class: ["more-or-less"],
     innerText: "Read Comments",
     listeners: [{
       action: "click",
@@ -1839,8 +1839,9 @@ function buildPanel({ id, user_id, description, code, title, username, rating },
   });
 
   const upHTML = buildElement("a", {
-    innerText: "↑",
-    class: [ "vote", "upvote" ],
+    id: 'upvote',
+    innerText: "ꜛ",
+    class: ["vote", "upvote"],
     attributes: { "data-post-id": id },
     listeners: [{
       action: "click",
@@ -1849,8 +1850,9 @@ function buildPanel({ id, user_id, description, code, title, username, rating },
   });
 
   const downHTML = buildElement("a", {
+    id: 'downvote',
     innerText: "↓",
-    class: [ "vote", "downvote" ],
+    class: ["vote", "downvote"],
     attributes: { "data-post-id": id },
     listeners: [{
       action: "click",
@@ -1859,43 +1861,38 @@ function buildPanel({ id, user_id, description, code, title, username, rating },
   });
 
 
-
   const votingHTML = [];
+  votingHTML.push(upHTML);
+  votingHTML.push(ratingHTML);
+  votingHTML.push(downHTML);
 
-  if (loggedIn) {
-    votingHTML.push(upHTML);
-    votingHTML.push(ratingHTML);
-    votingHTML.push(downHTML);
-  } else {
-    votingHTML.push(ratingHTML);
-  }
 
   const voteWrapper = buildElement("div", {
-    class: [ "vote-wrapper" ],
+    class: ["vote-wrapper"],
     children: votingHTML
   });
 
-  const cardHTMLChild = [ delButHTML, editButHTML,titleHTML, userHTML, descHTML, codeHTML, commButHTML ];
+  const cardHTMLChild = [delButHTML, editButHTML, titleHTML, userHTML, descHTML, codeHTML, commButHTML];
 
   const cardHTML = buildElement("div", {
-    class: [ "" ],
-    attributes: { "data-post-id" : id },
+    class: [""],
+    attributes: { "data-post-id": id },
     children: cardHTMLChild
   });
 
   const contentCellHTML = buildElement("div", {
-    class: [ "col", "m11" ],
-    children: [ cardHTML ]
+    class: ["col", "m11"],
+    children: [cardHTML]
   });
 
   const voteCellHTML = buildElement("div", {
-    class: [ "col", "m1" ],
-    children: [ voteWrapper ]
+    class: ["col", "m1"],
+    children: [voteWrapper]
   });
 
   const rowHTML = buildElement("div", {
-    class: [ "row", "card-panel" ],
-    children: [ voteCellHTML, contentCellHTML ]
+    class: ["row", "card-panel"],
+    children: [voteCellHTML, contentCellHTML]
   });
 
   return rowHTML;
@@ -1903,22 +1900,19 @@ function buildPanel({ id, user_id, description, code, title, username, rating },
 
 module.exports = buildPosts;
 
-},{"./btnEvents":28,"./server":34,"./utils":35,"axios":1}],31:[function(require,module,exports){
+},{"./btnEvents":28,"./server":34,"./utils":35}],31:[function(require,module,exports){
 const buildElement = require("./utils")
 const server = require("./server")
 
 
 function editPost(titleHTML, descHTML, codeHTML, id, cb) {
-  // console.log(titleHTML)
   const title = titleHTML.innerText
   const description = descHTML.innerText
   const code = codeHTML.innerText
 
-  console.log(title, description, code)
-
   const titleInput = buildElement("input", {
     attributes: { value: title }
-  });
+  })
   const descInput = buildElement("textarea", {
     innerText: description
   })
@@ -1996,7 +1990,6 @@ function create() {
 
         server.createPost(newPost)
             .then((res) => {
-                // console.log("I did it!");
                 window.location.href = "http://127.0.0.1:8080/"
             })
             .catch(function (err) {
@@ -2029,137 +2022,120 @@ const axios = require('axios')
 const heroku = "http://localhost:3000";
 
 
-function getAllPosts() {
-  return axios.get(heroku + "/posts")
-}
+// HELPER FUNCTION - standarizes format for axios calls
+function request(path, method = 'get', body = null) {
+  let bearerToken = ''
+  const token = localStorage.getItem('token')
 
-function getAllComments(id) {
-  return axios.get(heroku + "/posts/" + id + "/comments")
-}
-
-function createPost(newPost) {
-  const token = localStorage.getItem("token")
-  return axios.post(heroku + "/posts", newPost, {
+  if (token) {
+    bearerToken = `Bearer ${token}`
+  }
+  return axios(`${path}`, {
+    method: method,
     headers: {
-      Authorization: "bearer " + token
-    }
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': bearerToken
+    },
+    data: body
   })
 }
 
-function createComment(id, newComment) {
-  return axios.post(heroku + "/posts/" + id + "/comments", newComment)
+// CRUD OPERATIONS
+
+const createPost = newPost => {
+  const route = `${heroku}/posts${newPost}`
+  return request(route, 'post')
 }
 
-function updatePost(id, newPost) {
-  console.log(newPost);
-  
-  const token = localStorage.getItem("token")
-  return axios.put(heroku + "/posts/" + id, newPost, {
-    headers: {
-      Authorization: "bearer " + token
-    }
-  })
+const createComment = (id, newComment) => {
+  const route = `${heroku}/posts/${id}/comments`
+  return request(route, 'post', newComment)
 }
 
-function updateComment(id, newComment) {
-  return axios.put(heroku + "/posts/" + id + "/comments", newComment)
+const createRating = (id) => {
+  const route = `${heroku}/posts/${id}/ratings/${id}`
+  const arg = {rating: 1}
+  return request(route, 'put', arg)
 }
 
-function delPost(id) {
-  const token = localStorage.getItem("token")
-  return axios.delete(
-    heroku + "/posts/" + id, {
-      headers: {
-        Authorization: "bearer " + token
-      }
-    })
+const getAllPosts = () => {
+  const route = `${heroku}/posts`
+  return request(route, 'get')
 }
 
-function delComment(id, cId) {
-  return axios.delete(heroku + "/posts/" + id + "/comments", cId)
+const getAllComments = id => {
+  const route = `${heroku}/posts/${id}/comments`
+  return request(route, 'get')
 }
 
-function createRating(entry, id) {
-  const token = localStorage.getItem("token");
-  return axios.post(
-    heroku + "/posts/" + id + "/ratings",
-    entry, {
-      headers: {
-        Authorization: "bearer " + token
-      }
-    });
+const updatePost = (id, newPost) => {
+  const route = `${heroku}/posts/${id}`
+  return request(route, 'put', newPost)
 }
 
-function getRating(id) {
-  return axios.get(heroku + "/posts/" + id + "/rating")
+const updateComment = (id, newComment) => {
+  const route = `${heroku}/posts/${id}/comments`
+  return request(route, 'put', newComment)
 }
 
-function votes() {
+const delPost = id => {
+  const route = `${heroku}/posts/${id}`
+  return request(route, 'delete')
+}
 
+const delComment = (id, commentId) => {
+  const route = `${heroku}/posts/${id}/comments`
+  return request(route, 'delete', commentId)
 }
 
 module.exports = {
-  getAllPosts,
-  getAllComments,
   createPost,
   createComment,
+  createRating,
+  getAllPosts,
+  getAllComments,
   updatePost,
   updateComment,
   delPost,
-  createRating,
-  delComment
+  delComment,
+  request
 }
 
 },{"axios":1}],35:[function(require,module,exports){
 /*
- *  Takes a string, type, which is the type of element and an object
- *  which configures the element.
- *
- *  object = {
- *    id : "...",
- *    innerText: "...",
- *    attributes: ["...", "..."],
- *    listeners: [{...}, {...}]
- *    children: ["...", "..."],
- *    class: ["...", "..."]
- *  }
- *
- *  for children, order matters! The first element should be at the top of the
- *  DOM
+  The first parameter, type, takes an html element as a string.
+  The second parameter, features, takes an object for the elements attributes.
+  For example: buildlElement('h1', { innerText: title, class: ["title-data"] })
+  
+  The order in which this function is called is important, the earlier it's called the
+  higher in the DOM the element attaches
  */
+
 function buildElement(type, features) {
   const el = document.createElement(type);
 
-  if (features.id) {
-    el.id = features.id;
-  }
-
-  if (features.class) {
-    el.className = features.class.join(" ");
-  }
+  if (features.id) el.id = features.id
+  if (features.class) el.className = features.class.join(" ")
+  if (features.innerText) el.innerText = features.innerText
 
   if (features.attributes) {
     for (attribute in features.attributes) {
-      el.setAttribute(attribute, features.attributes[attribute]);
+      el.setAttribute(attribute, features.attributes[attribute])
     }
   }
 
-  if (features.innerText) {
-    el.innerText = features.innerText;
-  }
-
   if (features.listeners) {
-    features.listeners.forEach(listener =>  {
+    features.listeners.forEach(listener => {
       el.addEventListener(listener.action, listener.callback)
-    });
+    })
   }
 
   if (features.children) {
     features.children.forEach(child => {
       el.appendChild(child);
-    });
+    })
   }
-
   return el;
 }
 

@@ -2,7 +2,7 @@ const axios = require('axios')
 const heroku = "http://localhost:3000";
 
 
-// HELPER FUNCTION- standarizes format for axios calls
+// HELPER FUNCTION - standarizes format for axios calls
 function request(path, method = 'get', body = null) {
   let bearerToken = ''
   const token = localStorage.getItem('token')
@@ -10,8 +10,7 @@ function request(path, method = 'get', body = null) {
   if (token) {
     bearerToken = `Bearer ${token}`
   }
-
-  return axios(`${heroku}${path}`, {
+  return axios(`${path}`, {
     method: method,
     headers: {
       'Content-Type': 'application/json',
@@ -25,54 +24,48 @@ function request(path, method = 'get', body = null) {
 // CRUD OPERATIONS
 
 const createPost = newPost => {
-  const route = `/posts${newPost}`
+  const route = `${heroku}/posts${newPost}`
   return request(route, 'post')
 }
 
 const createComment = (id, newComment) => {
-  const route = `/posts/${id}/comments`
+  const route = `${heroku}/posts/${id}/comments`
   return request(route, 'post', newComment)
 }
 
-// the two rating routes are different, should they be? 
-// we have ratings(plural) and rating(singular)
-const createRating = id => {
-  const route = `/posts/${id}/ratings`
-  return request(route, 'post')
+const createRating = (id) => {
+  const route = `${heroku}/posts/${id}/ratings/${id}`
+  const arg = {rating: 1}
+  return request(route, 'put', arg)
 }
 
 const getAllPosts = () => {
-  const route = '/posts'
+  const route = `${heroku}/posts`
   return request(route, 'get')
 }
 
 const getAllComments = id => {
-  const route = `/posts/${id}/comments`
-  return request(route, 'get')
-}
-
-const getRating = id => {
-  const route = `/posts/${id}/rating`
+  const route = `${heroku}/posts/${id}/comments`
   return request(route, 'get')
 }
 
 const updatePost = (id, newPost) => {
-  const route = `/posts/${id}`
+  const route = `${heroku}/posts/${id}`
   return request(route, 'put', newPost)
 }
 
 const updateComment = (id, newComment) => {
-  const route = `/posts/${id}/comments`
+  const route = `${heroku}/posts/${id}/comments`
   return request(route, 'put', newComment)
 }
 
 const delPost = id => {
-  const route = `/posts/${id}`
+  const route = `${heroku}/posts/${id}`
   return request(route, 'delete')
 }
 
 const delComment = (id, commentId) => {
-  const route = `/posts/${id}/comments`
+  const route = `${heroku}/posts/${id}/comments`
   return request(route, 'delete', commentId)
 }
 
@@ -82,9 +75,9 @@ module.exports = {
   createRating,
   getAllPosts,
   getAllComments,
-  getRating,
   updatePost,
   updateComment,
   delPost,
-  delComment
+  delComment,
+  request
 }

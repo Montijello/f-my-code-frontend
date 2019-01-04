@@ -1,10 +1,8 @@
-const axios = require("axios");
 const buildElement = require("./utils");
 const server = require("./server");
 const listeners = require("./btnEvents");
 
 const postsDiv = document.querySelector("#showPosts");
-const user_id = localStorage.getItem("user_id");
 
 const loggedIn = !!localStorage.getItem("token");
 
@@ -28,7 +26,7 @@ function buildPosts() {
     })
 }
 
-function buildPanel({ id, user_id, description, code, title, username, rating }, getDeleteHandler, getCommentsHandler, voteUp, voteDown, editBtnHandler) {
+function buildPanel({ id, description, code, title, username, rating }, getDeleteHandler, getCommentsHandler, voteUp, voteDown, editBtnHandler) {
 
 
   const titleHTML = buildElement("h3", { innerText: title, class: ["title-data"] });
@@ -36,32 +34,35 @@ function buildPanel({ id, user_id, description, code, title, username, rating },
   const codeHTML = buildElement("code", { innerText: code, class: ["code-data"] });
   const userHTML = buildElement("span", {
     innerText: username,
-    class: [ "user" ]
+    class: ["user"]
   });
 
   const ratingHTML = buildElement("span", {
     innerText: rating,
-    class: [ "rating" ]
+    class: ["rating"]
   });
 
   const delButHTML = buildElement("a", {
     id: "remove-post",
     innerText: "❌",
-    attributes: {"data-post-id": id },
+    cursor: "pointer",
+    attributes: { "data-post-id": id },
     listeners: [
       { action: "click", callback: getDeleteHandler }]
   });
+
   const editButHTML = buildElement("a", {
     id: "remove-post",
-    innerText: " ✏️",
-    attributes: {"data-post-id": id },
+    innerText: "✅",
+    cursor: "pointer",
+    attributes: { "data-post-id": id },
     listeners: [
       { action: "click", callback: editBtnHandler }]
   });
 
   const commButHTML = buildElement("a", {
     id: "read-comments",
-    class: [ "more-or-less" ],
+    class: ["more-or-less"],
     innerText: "Read Comments",
     listeners: [{
       action: "click",
@@ -70,8 +71,9 @@ function buildPanel({ id, user_id, description, code, title, username, rating },
   });
 
   const upHTML = buildElement("a", {
-    innerText: "↑",
-    class: [ "vote", "upvote" ],
+    id: 'upvote',
+    innerText: "ꜛ",
+    class: ["vote", "upvote"],
     attributes: { "data-post-id": id },
     listeners: [{
       action: "click",
@@ -80,8 +82,9 @@ function buildPanel({ id, user_id, description, code, title, username, rating },
   });
 
   const downHTML = buildElement("a", {
+    id: 'downvote',
     innerText: "↓",
-    class: [ "vote", "downvote" ],
+    class: ["vote", "downvote"],
     attributes: { "data-post-id": id },
     listeners: [{
       action: "click",
@@ -90,43 +93,38 @@ function buildPanel({ id, user_id, description, code, title, username, rating },
   });
 
 
-
   const votingHTML = [];
+  votingHTML.push(upHTML);
+  votingHTML.push(ratingHTML);
+  votingHTML.push(downHTML);
 
-  if (loggedIn) {
-    votingHTML.push(upHTML);
-    votingHTML.push(ratingHTML);
-    votingHTML.push(downHTML);
-  } else {
-    votingHTML.push(ratingHTML);
-  }
 
   const voteWrapper = buildElement("div", {
-    class: [ "vote-wrapper" ],
+    class: ["vote-wrapper"],
     children: votingHTML
   });
 
-  const cardHTMLChild = [ delButHTML, editButHTML,titleHTML, userHTML, descHTML, codeHTML, commButHTML ];
+  const cardHTMLChild = [delButHTML, editButHTML, titleHTML, userHTML, descHTML, codeHTML, commButHTML];
 
   const cardHTML = buildElement("div", {
-    class: [ "" ],
-    attributes: { "data-post-id" : id },
+    class: [""],
+    attributes: { "data-post-id": id },
     children: cardHTMLChild
   });
 
   const contentCellHTML = buildElement("div", {
-    class: [ "col", "m11" ],
-    children: [ cardHTML ]
+    class: ["col", "m11"],
+    children: [cardHTML]
   });
 
   const voteCellHTML = buildElement("div", {
-    class: [ "col", "m1" ],
-    children: [ voteWrapper ]
+    class: ["col", "m1"],
+    children: [voteWrapper]
   });
 
   const rowHTML = buildElement("div", {
-    class: [ "row", "card-panel" ],
-    children: [ voteCellHTML, contentCellHTML ]
+    class: ["row", "card-panel"],
+    children: [voteCellHTML, contentCellHTML]
   });
 
   return rowHTML;

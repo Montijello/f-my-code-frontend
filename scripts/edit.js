@@ -3,16 +3,13 @@ const server = require("./server")
 
 
 function editPost(titleHTML, descHTML, codeHTML, id, cb) {
-  // console.log(titleHTML)
   const title = titleHTML.innerText
   const description = descHTML.innerText
   const code = codeHTML.innerText
 
-  console.log(title, description, code)
-
   const titleInput = buildElement("input", {
     attributes: { value: title }
-  });
+  })
   const descInput = buildElement("textarea", {
     innerText: description
   })

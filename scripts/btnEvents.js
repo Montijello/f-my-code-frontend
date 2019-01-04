@@ -3,7 +3,6 @@ const server = require("./server");
 const edit = require("./edit")
 
 
-
 function getCommentsHandler(buildPosts) {
   return function(e) {
     const button = e.target
@@ -20,7 +19,6 @@ function getCommentsHandler(buildPosts) {
       })
   }
 }
-
 
 function editBtnHandler(cb){
   return function (e) {
@@ -62,7 +60,8 @@ function voteUp(buildPosts) {
     const button = e.target;
     const postId = button.getAttribute("data-post-id");
 
-    server.createRating({ rating: 1 }, postId)
+    // server.createRating({ rating: 1 }, postId)
+    server.createRating(postId) 
       .then(() => {
         removePostsDOM();
         buildPosts();

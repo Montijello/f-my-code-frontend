@@ -27,6 +27,7 @@ height: 60px;
 }
 #leftTitle {
   color: $palegold;
+  cursor: pointer;
   font-family: 'Roboto Slab', serif;
   font-size: 40px;
   padding-left: 50px;
@@ -94,8 +95,6 @@ a.more-or-less {
   color: $purple;
   cursor: pointer;
 }
-
-
 
 div.card-panel span.rating {
   font-size: 17px;

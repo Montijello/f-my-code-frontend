@@ -14,7 +14,7 @@ function buildComments(comments) {
       action: "click",
       callback: listeners.shrinkComments
     }]
-  });
+  })
 
   comments.forEach(comment => {
 
