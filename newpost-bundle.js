@@ -1636,7 +1636,7 @@ const edit = require("./edit")
 
 
 function getCommentsHandler(buildPosts) {
-  return function(e) {
+  return function (e) {
     const button = e.target
     const cardPanel = button.parentElement
     const id = cardPanel.getAttribute("data-post-id")
@@ -1652,7 +1652,7 @@ function getCommentsHandler(buildPosts) {
   }
 }
 
-function editBtnHandler(cb){
+function editBtnHandler(cb) {
   return function (e) {
     const panelCard = e.target.parentElement
     const id = e.target.getAttribute("data-post-id")
@@ -1673,10 +1673,10 @@ function editBtnHandler(cb){
 function getDeleteHandler(cb) {
   return function (e) {
     server.delPost(e.target.getAttribute('data-post-id'))
-    .then((res) => {
-      removePostsDOM(res.data)
-      cb()
-    })
+      .then((res) => {
+        removePostsDOM(res.data)
+        cb()
+      })
   }
 }
 
@@ -1688,12 +1688,14 @@ function removePostsDOM() {
 }
 
 function voteUp(buildPosts) {
-  return function(e) {
+  return function (e) {
     const button = e.target;
     const postId = button.getAttribute("data-post-id");
+    const points = 1
+    let voteData = [postId, points]
 
-    // server.createRating({ rating: 1 }, postId)
-    server.createRating(postId) 
+    // createRating needs ()
+    server.createRating(voteData)
       .then(() => {
         removePostsDOM();
         buildPosts();
@@ -1702,11 +1704,13 @@ function voteUp(buildPosts) {
 }
 
 function voteDown(buildPosts) {
-  return function(e) {
+  return function (e) {
     const button = e.target;
     const postId = button.getAttribute("data-post-id");
+    const points = -1
+    let voteData = [postId, points]
 
-    server.createRating({ rating: -1 }, postId)
+    server.createRating(voteData)
       .then(() => {
         removePostsDOM();
         buildPosts();
@@ -1714,13 +1718,13 @@ function voteDown(buildPosts) {
   }
 }
 
-  module.exports = {
-    getCommentsHandler,
-    getDeleteHandler,
-    voteUp,
-    voteDown,
-    editBtnHandler
-  }
+module.exports = {
+  getCommentsHandler,
+  getDeleteHandler,
+  voteUp,
+  voteDown,
+  editBtnHandler
+}
 
 },{"./build-comments":29,"./edit":31,"./server":34}],29:[function(require,module,exports){
 // const axios = require("axios");
@@ -2022,24 +2026,24 @@ const axios = require('axios')
 const heroku = "http://localhost:3000";
 
 
-// HELPER FUNCTION - standarizes format for axios calls
-function request(path, method = 'get', body = null) {
-  let bearerToken = ''
-  const token = localStorage.getItem('token')
+  // HELPER FUNCTION - standarizes format for axios calls
+  function request(path, method = 'get', body = null) {
+    let bearerToken = ''
+    const token = localStorage.getItem('token')
 
-  if (token) {
-    bearerToken = `Bearer ${token}`
+    if (token) {
+      bearerToken = `Bearer ${token}`
+    }
+    return axios(path, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': bearerToken
+      },
+      data: body
+    })
   }
-  return axios(`${path}`, {
-    method: method,
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': bearerToken
-    },
-    data: body
-  })
-}
 
 // CRUD OPERATIONS
 
@@ -2053,11 +2057,14 @@ const createComment = (id, newComment) => {
   return request(route, 'post', newComment)
 }
 
-const createRating = (id) => {
-  const route = `${heroku}/posts/${id}/ratings/${id}`
-  const arg = {rating: 1}
-  return request(route, 'put', arg)
+const createRating = (voteData) => {
+  const path = `${heroku}/posts/${voteData[0]}/ratings/${voteData[0]}`
+  const method = 'post'
+  const body = voteData
+
+  return request(path, method, body)
 }
+
 
 const getAllPosts = () => {
   const route = `${heroku}/posts`

@@ -2,24 +2,24 @@ const axios = require('axios')
 const heroku = "http://localhost:3000";
 
 
-// HELPER FUNCTION - standarizes format for axios calls
-function request(path, method = 'get', body = null) {
-  let bearerToken = ''
-  const token = localStorage.getItem('token')
+  // HELPER FUNCTION - standarizes format for axios calls
+  function request(path, method = 'get', body = null) {
+    let bearerToken = ''
+    const token = localStorage.getItem('token')
 
-  if (token) {
-    bearerToken = `Bearer ${token}`
+    if (token) {
+      bearerToken = `Bearer ${token}`
+    }
+    return axios(path, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': bearerToken
+      },
+      data: body
+    })
   }
-  return axios(`${path}`, {
-    method: method,
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': bearerToken
-    },
-    data: body
-  })
-}
 
 // CRUD OPERATIONS
 
@@ -33,11 +33,14 @@ const createComment = (id, newComment) => {
   return request(route, 'post', newComment)
 }
 
-const createRating = (id) => {
-  const route = `${heroku}/posts/${id}/ratings/${id}`
-  const arg = {rating: 1}
-  return request(route, 'put', arg)
+const createRating = (voteData) => {
+  const path = `${heroku}/posts/${voteData[0]}/ratings/${voteData[0]}`
+  const method = 'post'
+  const body = voteData
+
+  return request(path, method, body)
 }
+
 
 const getAllPosts = () => {
   const route = `${heroku}/posts`

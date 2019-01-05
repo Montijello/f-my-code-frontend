@@ -4,7 +4,7 @@ const edit = require("./edit")
 
 
 function getCommentsHandler(buildPosts) {
-  return function(e) {
+  return function (e) {
     const button = e.target
     const cardPanel = button.parentElement
     const id = cardPanel.getAttribute("data-post-id")
@@ -20,7 +20,7 @@ function getCommentsHandler(buildPosts) {
   }
 }
 
-function editBtnHandler(cb){
+function editBtnHandler(cb) {
   return function (e) {
     const panelCard = e.target.parentElement
     const id = e.target.getAttribute("data-post-id")
@@ -41,10 +41,10 @@ function editBtnHandler(cb){
 function getDeleteHandler(cb) {
   return function (e) {
     server.delPost(e.target.getAttribute('data-post-id'))
-    .then((res) => {
-      removePostsDOM(res.data)
-      cb()
-    })
+      .then((res) => {
+        removePostsDOM(res.data)
+        cb()
+      })
   }
 }
 
@@ -56,12 +56,14 @@ function removePostsDOM() {
 }
 
 function voteUp(buildPosts) {
-  return function(e) {
+  return function (e) {
     const button = e.target;
     const postId = button.getAttribute("data-post-id");
+    const points = 1
+    let voteData = [postId, points]
 
-    // server.createRating({ rating: 1 }, postId)
-    server.createRating(postId) 
+    // createRating needs ()
+    server.createRating(voteData)
       .then(() => {
         removePostsDOM();
         buildPosts();
@@ -70,11 +72,13 @@ function voteUp(buildPosts) {
 }
 
 function voteDown(buildPosts) {
-  return function(e) {
+  return function (e) {
     const button = e.target;
     const postId = button.getAttribute("data-post-id");
+    const points = -1
+    let voteData = [postId, points]
 
-    server.createRating({ rating: -1 }, postId)
+    server.createRating(voteData)
       .then(() => {
         removePostsDOM();
         buildPosts();
@@ -82,10 +86,10 @@ function voteDown(buildPosts) {
   }
 }
 
-  module.exports = {
-    getCommentsHandler,
-    getDeleteHandler,
-    voteUp,
-    voteDown,
-    editBtnHandler
-  }
+module.exports = {
+  getCommentsHandler,
+  getDeleteHandler,
+  voteUp,
+  voteDown,
+  editBtnHandler
+}
